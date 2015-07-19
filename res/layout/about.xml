@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <PreferenceScreen
+        android:summary="@string/app_name"
+        android:title="@string/appName_text" >
+    </PreferenceScreen>
+
+    <PreferenceScreen
+        android:summary="@string/author_name"
+        android:title="@string/author_text" >
+    </PreferenceScreen>
+
+</PreferenceScreen>

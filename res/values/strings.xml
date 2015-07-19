@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">FastCV Sample App</string>
+    <string name="label_text">TextView02</string>
+    <string name="textview01_text">TextView01</string>
+    <string name="startpreview_text">Start</string>
+    <string name="stoppreview_text">Stop</string>
+    <!-- Options menu -->
+    <string name="settings">Settings</string>
+    <string name="about">About</string>
+    <!-- About menu -->
+    <string name="versionNumber_text">FastCV version</string>
+    <string name="releaseDate_text">Release date</string>
+    <string name="appName_text">Application name</string>
+    <string name="author_text">Adapted by</string>
+    <string name="releaseDate">April 2014</string>
+    <string name="versionNumber">1.5.0</string>
+    <string name="author_name">Vladislav Antonov vladislav.antonov@gmail.com</string>
+    <!-- Device camera select menu -->
+    <string name="shared_prefs_camera_list">fcv_sample_camera_list</string>
+    <string name="shared_prefs_camera_list_dialog">Select device camera to use:</string>
+    <string name="shared_prefs_camera_list_title">Camera</string>
+    <string name="shared_prefs_camera_list_summary">Select from available cameras</string>
+    <!-- Camera resolution select menu -->
+    <string name="shared_prefs_camera_resolution_dialog">Select %s resolution:</string>
+    <string name="shared_prefs_camera_resolution_summary">Select from available resolutions</string>
+    <string name="shared_prefs_camera_resolution_key">fcv_sample_camera_%d_resolution</string>
+
+</resources>
