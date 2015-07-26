@@ -48,7 +48,6 @@ struct State {
 /// Application' state structure to hold global state for sample app.
 static State state;
 
-
 //------------------------------------------------------------------------------
 /// @brief Performs scaling, blurring and corner detection
 /// 
@@ -80,8 +79,7 @@ void updateCorners(uint8_t* data, uint32_t w, uint32_t h) {
 	// Apply fast corner detection.
 	// Find w*h / 9 corners, with threshold set by user and border ==7
 	//
-	fcvCornerFast9u8(data, w, h, 0,
-			20, 7, state.corners, MAX_CORNERS_TO_DETECT,
+	fcvCornerFast9u8(data, w, h, 0, 20, 7, state.corners, MAX_CORNERS_TO_DETECT,
 			&state.numCorners);
 
 }
@@ -99,121 +97,92 @@ uint64_t getTimeMicroSeconds() {
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 JNIEXPORT void JNICALL
-Java_com_example_cameranative_CameraSample_cleanup
-(
-   JNIEnv * env, 
-   jobject obj
-)
-{
-   DPRINTF("%s\n", __FUNCTION__);
+Java_com_example_cameranative_CameraSample_cleanup(JNIEnv * env, jobject obj) {
+	DPRINTF("%s\n", __FUNCTION__);
 
-
-   fcvCleanUp();
+	fcvCleanUp();
 }
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-JNIEXPORT void 
-   JNICALL Java_com_example_cameranative_CameraSample_update
-(
-   JNIEnv*     env, 
-   jobject     obj, 
-   jbyteArray  img, 
-   jint        w, 
-   jint        h
-)
-{ 
-   jbyte*            jimgData = NULL;
-   jboolean          isCopy = 0;
-   uint8_t*          renderBuffer;
-   uint64_t          time;
-   float             timeMs;
+JNIEXPORT void
+JNICALL Java_com_example_cameranative_CameraSample_update(JNIEnv* env,
+		jobject obj, jbyteArray img, jint w, jint h) {
+	jbyte* jimgData = NULL;
+	jboolean isCopy = 0;
+	uint8_t* renderBuffer;
+	uint64_t time;
+	float timeMs;
 
-   // Get data from JNI 
-   jimgData = env->GetByteArrayElements( img, &isCopy );
-  
-   renderBuffer = getRenderBuffer( w, h );  
+	// Get data from JNI
+	jimgData = env->GetByteArrayElements(img, &isCopy);
 
-   lockRenderBuffer();
-   
-   time = getTimeMicroSeconds();
+	renderBuffer = getRenderBuffer(w, h);
 
-   // jimgData might not be 128 bit aligned.
-   // fcvColorYUV420toRGB565u8() and other fcv functionality inside 
-   // updateCorners() require 128 bit memory aligned. In case of jimgData 
-   // is not 128 bit aligned, it will allocate memory that is 128 bit 
-   // aligned and copies jimgData to the aligned memory.
+	lockRenderBuffer();
 
-   uint8_t*  pJimgData = (uint8_t*)jimgData;    
+	time = getTimeMicroSeconds();
 
-   // Copy the image first in our own buffer to avoid corruption during 
-   // rendering. Not that we can still have corruption in image while we do 
-   // copy but we can't help that. 
-   
-   // if viewfinder is disabled, simply set to gray
-   fcvColorYUV420toRGB565u8(
-	 pJimgData,
-	 w,
-	 h,
-	 (uint32_t*)renderBuffer );
+	// jimgData might not be 128 bit aligned.
+	// fcvColorYUV420toRGB565u8() and other fcv functionality inside
+	// updateCorners() require 128 bit memory aligned. In case of jimgData
+	// is not 128 bit aligned, it will allocate memory that is 128 bit
+	// aligned and copies jimgData to the aligned memory.
 
-   // Perform FastCV Corner processing
-   updateCorners( (uint8_t*)pJimgData, w, h );
+	uint8_t* pJimgData = (uint8_t*) jimgData;
 
-   timeMs = ( getTimeMicroSeconds() - time ) / 1000.f;
-   state.timeFilteredMs = 
-      ((state.timeFilteredMs*(29.f/30.f)) + (float)(timeMs/30.f));
+	// Copy the image first in our own buffer to avoid corruption during
+	// rendering. Not that we can still have corruption in image while we do
+	// copy but we can't help that.
 
-   // Have renderer draw corners on render buffer.
-   drawCorners( state.corners, state.numCorners );
+	// if viewfinder is disabled, simply set to gray
+	fcvColorYUV420toRGB565u8(pJimgData, w, h, (uint32_t*) renderBuffer);
 
-   unlockRenderBuffer();
-   
-   // Let JNI know we don't need data anymore. this is important!
-   env->ReleaseByteArrayElements( img, jimgData, JNI_ABORT );
+	// Perform FastCV Corner processing
+	updateCorners((uint8_t*) pJimgData, w, h);
+
+	timeMs = (getTimeMicroSeconds() - time) / 1000.f;
+	state.timeFilteredMs = ((state.timeFilteredMs * (29.f / 30.f))
+			+ (float) (timeMs / 30.f));
+
+	// Have renderer draw corners on render buffer.
+	drawCorners(state.corners, state.numCorners);
+
+	unlockRenderBuffer();
+
+	// Let JNI know we don't need data anymore. this is important!
+	env->ReleaseByteArrayElements(img, jimgData, JNI_ABORT);
 }
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-JNIEXPORT void JNICALL Java_com_example_cameranative_CameraSample_init
-(
-   JNIEnv* env, 
-   jobject obj
-)
-{
-   
-   fcvSetOperationMode( (fcvOperationMode) FASTCV_OP_PERFORMANCE );
+JNIEXPORT void JNICALL Java_com_example_cameranative_CameraSample_init(
+		JNIEnv* env, jobject obj) {
 
-return;
+	fcvSetOperationMode((fcvOperationMode) FASTCV_OP_PERFORMANCE);
+
+	return;
 }
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 JNIEXPORT jfloat JNICALL Java_com_example_cameranative_CameraSample_getCameraFPS(
-	JNIEnv* env, jobject obj) {
-return state.camFPSCounter.GetFilteredFPS();
+		JNIEnv* env, jobject obj) {
+	return state.camFPSCounter.GetFilteredFPS();
 }
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-JNIEXPORT void JNICALL Java_com_example_cameranative_CameraSample_cameraFrameTick
-(
-	JNIEnv* env,
-	jobject obj
-)
-{
-state.camFPSCounter.FrameTick();
+JNIEXPORT void JNICALL Java_com_example_cameranative_CameraSample_cameraFrameTick(
+		JNIEnv* env, jobject obj) {
+	state.camFPSCounter.FrameTick();
 }
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 JNIEXPORT jfloat JNICALL
-Java_com_example_cameranative_CameraSample_getNativeProcessTime
-(
-	JNIEnv* env,
-	jobject obj
-)
-{
-return (jfloat) state.timeFilteredMs;
+Java_com_example_cameranative_CameraSample_getNativeProcessTime(JNIEnv* env,
+		jobject obj) {
+	return (jfloat) state.timeFilteredMs;
 }
 
