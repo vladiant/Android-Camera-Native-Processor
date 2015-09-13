@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <android/log.h>
 #include <time.h>
-#include <fastcv.h>
 
 #include "CameraSample.h"
 #include "CameraSampleRenderer.h"
@@ -14,8 +13,115 @@
 #define IPRINTF(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 #define EPRINTF(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
-/// Constant maximum number of corners to detect.
-static const uint32_t MAX_CORNERS_TO_DETECT = 43000; // ~480*800 / 9
+inline uint8_t clip(int32_t val) {
+	return val > 255 ? 255 : (val < 0 ? 0 : val);
+}
+
+inline uint8_t yuv2r(int32_t y, int32_t u, int32_t v) {
+	int32_t r = (256 * y + 359 * (v - 128) + 128) >> 8;
+	return clip(r);
+}
+
+inline uint8_t yuv2g(int32_t y, int32_t u, int32_t v) {
+	int32_t g = (256 * y - 88 * (u - 128) - 183 * (v - 128) + 128) >> 8;
+	return clip(g);
+}
+
+inline uint8_t yuv2b(int32_t y, int32_t u, int32_t v) {
+	int32_t b = (256 * y + 454 * (u - 128) + 128) >> 8;
+	return clip(b);
+}
+
+void convertYUV420toRGB565(const uint8_t* inputY, const uint8_t* inputUV,
+		int imageWidth, int imageHeight, int inputYImageBpln,
+		int inputUVImageBpln, int outputImageBpln, uint8_t* outputRGB565) {
+
+	uint8_t* inputYData = (uint8_t*) inputY;
+	uint8_t* inputUVData = (uint8_t*) inputUV;
+	uint8_t* outputData = (uint8_t*) outputRGB565;
+
+	for (int row = 0; row < imageHeight; row += 2) {
+
+		uint8_t* pInputYRowUp = &inputYData[(row + 0) * inputYImageBpln];
+		uint8_t* pInputYRowDown = &inputYData[(row + 1) * inputYImageBpln];
+
+		uint8_t* pInputUVRow = &inputUVData[(row / 2) * inputUVImageBpln];
+
+		uint8_t* pOutputRowUp = &outputData[(row + 0) * outputImageBpln];
+		uint8_t* pOutputRowDown = &outputData[(row + 1) * outputImageBpln];
+
+		int col = 0;
+
+		for (; col < imageWidth / 2; col++) {
+
+			uint16_t r = 0, g = 0, b = 0, g1 = 0;
+			uint16_t y = 0, u = 0, v = 0;
+
+			// UV data for the four pixels.
+			u = *pInputUVRow++;
+			v = *pInputUVRow++;
+
+			// Top left pixel.
+			y = *pInputYRowUp++;
+
+			r = yuv2r(y, u, v);
+			g = yuv2g(y, u, v);
+			b = yuv2b(y, u, v);
+
+			g1 = g >> 5;
+			g = (g & 0x3c) << 3;
+			r >>= 3;
+			b &= 0xf8;
+			*pOutputRowUp++ = (uint8_t) (g | r);
+			*pOutputRowUp++ = (uint8_t) (b | g1);
+
+			// Top right pixel.
+			y = *pInputYRowUp++;
+
+			r = yuv2r(y, u, v);
+			g = yuv2g(y, u, v);
+			b = yuv2b(y, u, v);
+
+			g1 = g >> 5;
+			g = (g & 0x3c) << 3;
+			r >>= 3;
+			b &= 0xf8;
+			*pOutputRowUp++ = (uint8_t) (g | r);
+			*pOutputRowUp++ = (uint8_t) (b | g1);
+
+			// Bottom left pixel.
+			y = *pInputYRowDown++;
+
+			r = yuv2r(y, u, v);
+			g = yuv2g(y, u, v);
+			b = yuv2b(y, u, v);
+
+			g1 = g >> 5;
+			g = (g & 0x3c) << 3;
+			r >>= 3;
+			b &= 0xf8;
+			*pOutputRowDown++ = (uint8_t) (g | r);
+			*pOutputRowDown++ = (uint8_t) (b | g1);
+
+			// Bottom right pixel.
+			y = *pInputYRowDown++;
+
+			r = yuv2r(y, u, v);
+			g = yuv2g(y, u, v);
+			b = yuv2b(y, u, v);
+
+			g1 = g >> 5;
+			g = (g & 0x3c) << 3;
+			r >>= 3;
+			b &= 0xf8;
+			*pOutputRowDown++ = (uint8_t) (g | r);
+			*pOutputRowDown++ = (uint8_t) (b | g1);
+		} // for (int col ...
+
+	} // for (int row ...
+
+	return;
+}
 
 //------------------------------------------------------------------------------
 /// @brief
@@ -26,36 +132,19 @@ struct State {
 	/// Constructor for State object sets variables to default values.
 	//---------------------------------------------------------------------------
 	State() {
-		numCorners = 0;
-
 		timeFilteredMs = 5;
 	}
 
 	/// Camera preview FPS counter
 	FPSCounter camFPSCounter;
 
-	/// Number of corners detected in last frame.
-	uint32_t numCorners;
-
-	/// Storage for corners detected in last frame.
-	uint32_t FASTCV_ALIGN128( corners[MAX_CORNERS_TO_DETECT*2] );
-
-	/// Filtered timing value for FastCV processing.
+	/// Filtered timing value for sample processing.
 	float timeFilteredMs;
 
 };
 
 /// Application' state structure to hold global state for sample app.
 static State state;
-
-//------------------------------------------------------------------------------
-/// @brief Performs scaling, blurring and corner detection
-/// 
-/// @param data Pointer to image data to perform processing
-/// @param w Width of data
-/// @param y Height of data
-//------------------------------------------------------------------------------
-void updateCorners(uint8_t* data, uint32_t w, uint32_t h);
 
 //------------------------------------------------------------------------------
 /// @brief Returns current time in microseconds
@@ -67,22 +156,6 @@ uint64_t getTimeMicroSeconds();
 //==============================================================================
 // Function Definitions
 //==============================================================================
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-void updateCorners(uint8_t* data, uint32_t w, uint32_t h) {
-
-	//reset the number of corners detected
-	state.numCorners = 0;
-
-	//
-	// Apply fast corner detection.
-	// Find w*h / 9 corners, with threshold set by user and border ==7
-	//
-	fcvCornerFast9u8(data, w, h, 0, 20, 7, state.corners, MAX_CORNERS_TO_DETECT,
-			&state.numCorners);
-
-}
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
@@ -100,7 +173,7 @@ JNIEXPORT void JNICALL
 Java_com_example_cameranative_CameraSample_cleanup(JNIEnv * env, jobject obj) {
 	DPRINTF("%s\n", __FUNCTION__);
 
-	fcvCleanUp();
+	// TODO: Deinitialize camera sample processing here.
 }
 
 //------------------------------------------------------------------------------
@@ -123,30 +196,20 @@ JNICALL Java_com_example_cameranative_CameraSample_update(JNIEnv* env,
 
 	time = getTimeMicroSeconds();
 
-	// jimgData might not be 128 bit aligned.
-	// fcvColorYUV420toRGB565u8() and other fcv functionality inside
-	// updateCorners() require 128 bit memory aligned. In case of jimgData
-	// is not 128 bit aligned, it will allocate memory that is 128 bit
-	// aligned and copies jimgData to the aligned memory.
-
 	uint8_t* pJimgData = (uint8_t*) jimgData;
 
 	// Copy the image first in our own buffer to avoid corruption during
 	// rendering. Not that we can still have corruption in image while we do
 	// copy but we can't help that.
 
-	// if viewfinder is disabled, simply set to gray
-	fcvColorYUV420toRGB565u8(pJimgData, w, h, (uint32_t*) renderBuffer);
+	convertYUV420toRGB565(pJimgData, &pJimgData[w * h], w, h, w, w, w * 2,
+			(uint8_t*) renderBuffer);
 
-	// Perform FastCV Corner processing
-	updateCorners((uint8_t*) pJimgData, w, h);
+	// TODO: Perform sample processing here.
 
 	timeMs = (getTimeMicroSeconds() - time) / 1000.f;
 	state.timeFilteredMs = ((state.timeFilteredMs * (29.f / 30.f))
 			+ (float) (timeMs / 30.f));
-
-	// Have renderer draw corners on render buffer.
-	drawCorners(state.corners, state.numCorners);
 
 	unlockRenderBuffer();
 
@@ -159,7 +222,7 @@ JNICALL Java_com_example_cameranative_CameraSample_update(JNIEnv* env,
 JNIEXPORT void JNICALL Java_com_example_cameranative_CameraSample_init(
 		JNIEnv* env, jobject obj) {
 
-	fcvSetOperationMode((fcvOperationMode) FASTCV_OP_PERFORMANCE);
+	// TODO: Initialize camera sample processing here.
 
 	return;
 }

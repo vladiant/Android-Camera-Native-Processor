@@ -82,16 +82,6 @@ void unlockRenderBuffer();
 //---------------------------------------------------------------------------
 void lockRenderBuffer();
 
-//---------------------------------------------------------------------------
-/// @brief
-///   Draws specified corners on the render buffer.
-///
-/// @param corners pointer to corner data stored as unsigned int's
-///                x0,y0,x1,y1....
-/// @param numCorners Number of corners found in corners.
-///
-//---------------------------------------------------------------------------
-void drawCorners(uint32_t* corners, uint32_t numCorners);
 };
 
 #endif // CAMERA_SAMPLE_RENDERER_H

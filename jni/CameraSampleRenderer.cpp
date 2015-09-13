@@ -4,7 +4,6 @@
 #include <android/log.h>
 #include <time.h>
 #include <pthread.h>
-#include <fastcv.h>
 
 #include "CameraSampleRenderer.h"
 #include "CameraRendererRGB565GL2.h"
@@ -78,7 +77,7 @@ uint8_t* getRenderBuffer(uint32_t w, uint32_t h) {
 	// Resize if necessary.
 	if (w != state.renderBufWidth || h != state.renderBufHeight) {
 		if (state.renderBufRGB565 != NULL) {
-			fcvMemFree(state.renderBufRGB565);
+			free(state.renderBufRGB565);
 			state.renderBufRGB565 = NULL;
 			state.renderBufSize = 0;
 			state.renderBufWidth = 0;
@@ -89,7 +88,7 @@ uint8_t* getRenderBuffer(uint32_t w, uint32_t h) {
 	// Allocate if necessary.
 	if (state.renderBufRGB565 == NULL) {
 		state.renderBufSize = w * h * 2;
-		state.renderBufRGB565 = (uint8_t*) fcvMemAlloc(state.renderBufSize, 16);
+		state.renderBufRGB565 = (uint8_t*) malloc(state.renderBufSize);
 		state.renderBufWidth = w;
 		state.renderBufHeight = h;
 
@@ -135,30 +134,6 @@ void lockRenderBuffer() {
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-void drawCorners(uint32_t* corners, uint32_t numCorners) {
-	uint32_t curcornerx = 0;
-	uint32_t curcornery = 0;
-
-	// for each of the corner found, insert a green pixel
-	for (uint32_t k = 0; k < numCorners; k++) {
-		curcornerx = *corners++;
-		curcornery = *corners++;
-
-		for (uint32_t i = curcornerx; i < GREEN_PIXEL_HEIGHT_WIDTH + curcornerx;
-				i++) {
-			for (uint32_t j = curcornery;
-					j < GREEN_PIXEL_HEIGHT_WIDTH + curcornery; j++) {
-				//processing on RGB data
-				state.renderBufRGB565[2 * (j * state.renderBufWidth + i)] = 0;
-				state.renderBufRGB565[2 * (j * state.renderBufWidth + i) + 1] =
-						31;
-			}
-		}
-	}
-}
-
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
 JNIEXPORT void JNICALL
 Java_com_example_cameranative_CameraSampleRenderer_cleanup(JNIEnv * env,
 		jobject obj) {
@@ -170,7 +145,7 @@ Java_com_example_cameranative_CameraSampleRenderer_cleanup(JNIEnv * env,
 	}
 
 	if (state.renderBufRGB565 != NULL) {
-		fcvMemFree(state.renderBufRGB565);
+		free(state.renderBufRGB565);
 		state.renderBufRGB565 = NULL;
 	}
 

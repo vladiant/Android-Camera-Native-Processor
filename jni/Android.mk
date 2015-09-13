@@ -1,22 +1,6 @@
 LOCAL_PATH:= $(call my-dir)
 
 ##########################################################
-# FastCV - start.
-##########################################################
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := fastcv
-LOCAL_SRC_FILES := fastcv/lib/libfastcv.a
-LOCAL_STRIP_MODULE := false
-include $(PREBUILT_STATIC_LIBRARY)
-
-##########################################################
-# FastCV - end.
-##########################################################
-
-
-
-##########################################################
 # Native Processing - start.
 ##########################################################
 
@@ -64,9 +48,7 @@ LOCAL_SRC_FILES := \
     CameraUtil.cpp \
     CameraSampleRenderer.cpp
 
-LOCAL_STATIC_LIBRARIES := fastcv
 LOCAL_SHARED_LIBRARIES := liblog libGLESv2
-LOCAL_C_INCLUDES += $(LOCAL_PATH)/fastcv/inc
 
 include $(BUILD_SHARED_LIBRARY)
 

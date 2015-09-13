@@ -21,7 +21,7 @@ public class About extends PreferenceActivity {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.layout.about);
 		if (aboutScreen == null) {
-			String fastcvVersion = getFastCVVersion();
+			String softwareVersion = getVersionData();
 
 			aboutScreen = getPreferenceScreen();
 
@@ -29,12 +29,12 @@ public class About extends PreferenceActivity {
 					.createPreferenceScreen(this);
 			versionNumberScreen
 					.setTitle(getString(R.string.versionNumber_text));
-			versionNumberScreen.setSummary(fastcvVersion);
+			versionNumberScreen.setSummary(softwareVersion);
 			aboutScreen.addPreference(versionNumberScreen);
 		}
 		setPreferenceScreen(aboutScreen);
 	}
 
 	// Native Function Declarations
-	public native String getFastCVVersion();
+	public native String getVersionData();
 }

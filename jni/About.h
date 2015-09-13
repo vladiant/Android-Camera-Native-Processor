@@ -6,11 +6,11 @@
 extern "C" {
 
 //-----------------------------------------------------------------------------
-/// @brief fcvGetVersion
+/// @brief getVersionData
 ///
-/// @return FastCV version
+/// @return Software version
 //-----------------------------------------------------------------------------
-JNIEXPORT jstring JNICALL Java_com_example_cameranative_About_getFastCVVersion(
+JNIEXPORT jstring JNICALL Java_com_example_cameranative_About_getVersionData(
 		JNIEnv* env, jobject obj);
 
 }
