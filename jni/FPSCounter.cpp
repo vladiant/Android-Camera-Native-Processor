@@ -1,18 +1,23 @@
-#include <time.h>
-
 #include "FPSCounter.h"
 
-//#define DEBUG 1
-#define FPSCOUNTER_LOG_TAG    "QCCommon:FPSCounter"
+#include <time.h>
 
-#ifdef DEBUG   
+//#define DEBUG 1
+#define FPSCOUNTER_LOG_TAG "QCCommon:FPSCounter"
+
+#ifdef DEBUG
 #include <android/log.h>
-#define DPRINTF(...)  __android_log_print(ANDROID_LOG_DEBUG,FPSCOUNTER_LOG_TAG,__VA_ARGS__)
+#define DPRINTF(...) \
+  __android_log_print(ANDROID_LOG_DEBUG, FPSCOUNTER_LOG_TAG, __VA_ARGS__)
 #else
-#define DPRINTF(...)   //noop#endif
-#define IPRINTF(...)  __android_log_print(ANDROID_LOG_INFO,FPSCOUNTER_LOG_TAG,__VA_ARGS__)
-#define EPRINTF(...)  __android_log_print(ANDROID_LOG_ERROR,FPSCOUNTER_LOG_TAG,__VA_ARGS__)
-#define WPRINTF(...)  __android_log_print(ANDROID_LOG_WARN,FPSCOUNTER_LOG_TAG,__VA_ARGS__)
+#define DPRINTF(...)  // noop \
+#endif
+#define IPRINTF(...) \
+  __android_log_print(ANDROID_LOG_INFO, FPSCOUNTER_LOG_TAG, __VA_ARGS__)
+#define EPRINTF(...) \
+  __android_log_print(ANDROID_LOG_ERROR, FPSCOUNTER_LOG_TAG, __VA_ARGS__)
+#define WPRINTF(...) \
+  __android_log_print(ANDROID_LOG_WARN, FPSCOUNTER_LOG_TAG, __VA_ARGS__)
 
 //------------------------------------------------------------------------------
 /// @brief Default constructor
@@ -90,4 +95,3 @@ void FPSCounter::Reset() {
 FPSCounter::~FPSCounter() {
 	DPRINTF("FPSCounter::~FPSCounter");
 }
-

@@ -8,8 +8,8 @@ extern "C" {
 /// @brief
 ///   Destroys the renderer
 //---------------------------------------------------------------------------
-JNIEXPORT void JNICALL Java_com_example_cameranative_CameraSample_cleanup(
-		JNIEnv * env, jobject obj);
+JNIEXPORT void JNICALL
+Java_com_example_cameranative_CameraSample_cleanup(JNIEnv* env, jobject obj);
 
 //---------------------------------------------------------------------------
 /// @brief
@@ -21,8 +21,11 @@ JNIEXPORT void JNICALL Java_com_example_cameranative_CameraSample_cleanup(
 /// @param h
 ///    height of buffer
 //---------------------------------------------------------------------------
-JNIEXPORT void JNICALL Java_com_example_cameranative_CameraSampleRenderer_render(
-		JNIEnv * env, jobject obj, jbyteArray img, jint w, jint h);
+JNIEXPORT void JNICALL
+Java_com_example_cameranative_CameraSampleRenderer_render(JNIEnv* env,
+                                                          jobject obj,
+                                                          jbyteArray img,
+                                                          jint w, jint h);
 
 //------------------------------------------------------------------------------
 /// @brief Calls native process
@@ -31,29 +34,31 @@ JNIEXPORT void JNICALL Java_com_example_cameranative_CameraSampleRenderer_render
 /// @param y Height of height
 //------------------------------------------------------------------------------
 JNIEXPORT void JNICALL Java_com_example_cameranative_CameraSample_update(
-		JNIEnv* env, jobject obj, jbyteArray img, jint w, jint h);
+    JNIEnv* env, jobject obj, jbyteArray img, jint w, jint h);
 
 //---------------------------------------------------------------------------
 /// @brief
 ///    Initializes the renderer
 //---------------------------------------------------------------------------
-JNIEXPORT void JNICALL Java_com_example_cameranative_CameraSample_init(
-		JNIEnv* env, jobject obj);
+JNIEXPORT void JNICALL
+Java_com_example_cameranative_CameraSample_init(JNIEnv* env, jobject obj);
 
 //------------------------------------------------------------------------------
 /// @brief Gets the camera frame rate
 ///
 /// @return Camera FPS (frames per second)
 //------------------------------------------------------------------------------
-JNIEXPORT jfloat JNICALL Java_com_example_cameranative_CameraSample_getCameraFPS(
-		JNIEnv* env, jobject obj);
+JNIEXPORT jfloat JNICALL
+Java_com_example_cameranative_CameraSample_getCameraFPS(JNIEnv* env,
+                                                        jobject obj);
 
 //------------------------------------------------------------------------------
 /// @brief Increments the camera frame tick count
 ///
 //------------------------------------------------------------------------------
-JNIEXPORT void JNICALL Java_com_example_cameranative_CameraSample_cameraFrameTick(
-		JNIEnv* env, jobject obj);
+JNIEXPORT void JNICALL
+Java_com_example_cameranative_CameraSample_cameraFrameTick(JNIEnv* env,
+                                                           jobject obj);
 
 //------------------------------------------------------------------------------
 /// @brief Retrieves native processing timing from native layer.
@@ -62,8 +67,7 @@ JNIEXPORT void JNICALL Java_com_example_cameranative_CameraSample_cameraFrameTic
 //------------------------------------------------------------------------------
 JNIEXPORT jfloat JNICALL
 Java_com_example_cameranative_CameraSample_getNativeProcessTime(JNIEnv* env,
-		jobject obj);
-
+                                                                jobject obj);
 };
 
-#endif // CAMERA_SAMPLE_H
+#endif  // CAMERA_SAMPLE_H

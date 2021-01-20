@@ -14,15 +14,17 @@ extern "C" {
 //---------------------------------------------------------------------------
 JNIEXPORT void JNICALL
 Java_com_example_cameranative_CameraSampleRenderer_surfaceChanged(JNIEnv* env,
-		jobject obj, jint width, jint height);
+                                                                  jobject obj,
+                                                                  jint width,
+                                                                  jint height);
 
 //---------------------------------------------------------------------------
 /// @brief
 ///   Cleans up any memory and state associated with the renderer.
 //---------------------------------------------------------------------------
 JNIEXPORT void JNICALL
-Java_com_example_cameranative_CameraSampleRenderer_cleanup(JNIEnv * env,
-		jobject obj);
+Java_com_example_cameranative_CameraSampleRenderer_cleanup(JNIEnv* env,
+                                                           jobject obj);
 
 //---------------------------------------------------------------------------
 /// @brief
@@ -35,8 +37,10 @@ Java_com_example_cameranative_CameraSampleRenderer_cleanup(JNIEnv * env,
 ///    height of buffer
 //---------------------------------------------------------------------------
 JNIEXPORT void JNICALL
-Java_com_example_cameranative_CameraSampleRenderer_render(JNIEnv * env,
-		jobject obj, jbyteArray img, jint w, jint h);
+Java_com_example_cameranative_CameraSampleRenderer_render(JNIEnv* env,
+                                                          jobject obj,
+                                                          jbyteArray img,
+                                                          jint w, jint h);
 
 //------------------------------------------------------------------------------
 /// @brief Gets the rendering frame rate
@@ -45,7 +49,7 @@ Java_com_example_cameranative_CameraSampleRenderer_render(JNIEnv * env,
 //------------------------------------------------------------------------------
 JNIEXPORT jfloat JNICALL
 Java_com_example_cameranative_CameraSampleRenderer_getGPUFPS(JNIEnv* env,
-		jobject obj);
+                                                             jobject obj);
 
 //---------------------------------------------------------------------------
 /// @brief
@@ -81,7 +85,6 @@ void unlockRenderBuffer();
 ///   corruption.
 //---------------------------------------------------------------------------
 void lockRenderBuffer();
-
 };
 
-#endif // CAMERA_SAMPLE_RENDERER_H
+#endif  // CAMERA_SAMPLE_RENDERER_H

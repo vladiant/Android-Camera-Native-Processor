@@ -6,81 +6,74 @@
  *      application
  */
 class FPSCounter {
-protected:
+ protected:
+  /**
+   * 1 second defined in terms of micro second.
+   */
+  static const uint64_t SECOND = 1000000;
 
-	/**
-	 * 1 second defined in terms of micro second.
-	 */
-	static const uint64_t SECOND = 1000000;
+  /**
+   * Current FPS
+   */
+  float mFPS;
 
-	/**
-	 * Current FPS
-	 */
-	float mFPS;
+  /**
+   * Filtered FPS
+   */
+  float mFilteredFPS;
 
-	/**
-	 * Filtered FPS
-	 */
-	float mFilteredFPS;
+  /**
+   * Time stamp at start
+   */
+  uint64_t mStartTime;
 
-	/**
-	 * Time stamp at start
-	 */
-	uint64_t mStartTime;
+  /**
+   * Last time stamp
+   */
+  uint64_t mLastTime;
 
-	/**
-	 * Last time stamp
-	 */
-	uint64_t mLastTime;
+  /**
+   * Number of frames elapsed since the start
+   */
+  uint64_t mFrameCount;
 
-	/**
-	 * Number of frames elapsed since the start
-	 */
-	uint64_t mFrameCount;
+  /**
+   * Filtered average time between measurements.
+   */
+  float mSecIIR;
 
-	/**
-	 * Filtered average time between measurements.
-	 */
-	float mSecIIR;
+ public:
+  /**
+   * @brief  Default Constructor
+   */
+  FPSCounter();
 
-public:
+  /**
+   * @brief  Should be called every frame
+   */
+  void FrameTick();
+  /**
+   * @brief Resets the counters
+   */
+  void Reset();
 
-	/**
-	 * @brief  Default Constructor
-	 */
-	FPSCounter();
+  /**
+   * @brief Returns the running fps
+   * @return fps
+   */
+  inline float GetCurrentFPS() { return mFPS; }
 
-	/**
-	 * @brief  Should be called every frame
-	 */
-	void FrameTick();
-	/**
-	 * @brief Resets the counters
-	 */
-	void Reset();
+  /**
+   * @brief Returns the filtered fps
+   * @return fps
+   */
+  inline float GetFilteredFPS() { return mFilteredFPS; }
 
-	/**
-	 * @brief Returns the running fps
-	 * @return fps
-	 */
-	inline float GetCurrentFPS() {
-		return mFPS;
-	}
-
-	/**
-	 * @brief Returns the filtered fps
-	 * @return fps
-	 */
-	inline float GetFilteredFPS() {
-		return mFilteredFPS;
-	}
-
-	/**
-	 * @brief Default destructor
-	 *
-	 */
-	~FPSCounter();
-
+  /**
+   * @brief Default destructor
+   *
+   */
+  ~FPSCounter();
 };
 
-#endif //#ifndef __CAMERANATIVE_FPSCOUNTER_HEADERFILE__
+#endif  //#ifndef __CAMERANATIVE_FPSCOUNTER_HEADERFILE__
