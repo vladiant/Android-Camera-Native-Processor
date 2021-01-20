@@ -20,4 +20,4 @@ jobs:
       with:
         java-version: 1.8
     - name: Build with Gradle
-      run: gradle build buildEnvironment --warning-mode all --scan
+      run: gradle build
